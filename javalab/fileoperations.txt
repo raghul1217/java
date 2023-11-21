@@ -1,0 +1,137 @@
+---------bytestream
+
+import java.io.*; 
+public class ByteStream { 
+	public static void main(String[] args) throws IOException { 
+		FileInputStream in = null; 
+		FileOutputStream out = null; 
+		try { 	 
+            int c; 
+			in = new FileInputStream("input.txt"); 
+			out = new FileOutputStream("output.txt");
+			while ((c = in.read()) != -1) { 	
+                out.write(c);
+                System.out.print((char)c);	
+            }
+            System.out.println("data transferred!!!");
+		 }
+         catch(Exception e){
+            System.out.print(e);
+         }
+		finally { 
+			if (in != null) { 
+                in.close(); 
+            } 
+		if (out != null) { 
+            out.close(); 
+        } 
+		}
+	}
+ }
+ 
+ 
+ ---------charstream
+
+import java.io.*; 
+public class CharStream { 
+	public static void main(String args[]) throws IOException { 
+		FileReader in = null; 
+		FileWriter out = null; 
+		try { 	 
+            int c; 
+			in = new FileReader("input.txt"); 
+			out = new FileWriter("output.txt"); 
+			while ((c = in.read()) != -1) { 
+                out.write(c); 
+                System.out.print((char)c);
+            }
+		 }
+         
+         catch(Exception e){
+            System.out.println(e);
+         }
+		finally { 
+            if (in != null) {
+                 in.close();
+             } 
+		if (out != null) { 
+            out.close(); 
+        }
+		}
+	 } 
+}
+
+-----user input with one file
+import java.io.*;
+
+public class ByteStream {
+    public static void main(String[] args) throws IOException {
+        FileOutputStream out = null;
+
+        try {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+
+            System.out.print("Enter text to store in file: ");
+            String userInput = reader.readLine();
+
+            out = new FileOutputStream("output.txt");
+            byte[] data = userInput.getBytes();
+            out.write(data);
+
+            System.out.println("User input has been written to the file.");
+
+            // Display the content of the file
+            displayFileContents("output.txt");
+        } catch (Exception e) {
+            System.out.print(e);
+        } finally {
+            if (out != null) {
+                out.close();
+            }
+        }
+    }
+
+    private static void displayFileContents(String filePath) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+            System.out.println("Contents of the file:");
+            reader.lines().forEach(System.out::println);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+----- applet with swing
+import javax.swing.JApplet;
+import javax.swing.JFrame;
+import java.awt.Graphics;
+
+public class FaceApplet extends JApplet {
+    public void paint(Graphics g) {
+        // Draw the face outline
+        g.drawOval(100, 100, 200, 200);
+        // Draw the eyes
+        g.fillOval(150, 150, 20, 20); // Left eye
+        g.fillOval(230, 150, 20, 20); // Right eye
+        // Draw the mouth (smile)
+        g.drawArc(150, 200, 100, 50, 180, 180);
+    }
+
+    public static void main(String[] args) {
+        // Create a JFrame to hold the applet
+        JFrame frame = new JFrame("Face Applet in Swing Application");
+
+        // Create an instance of FaceApplet
+        FaceApplet faceApplet = new FaceApplet();
+
+        // Add the FaceApplet to the JFrame
+        frame.getContentPane().add(faceApplet);
+
+        // Set frame properties
+        frame.setSize(400, 400);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        // Make the frame visible
+        frame.setVisible(true);
+    }
+}

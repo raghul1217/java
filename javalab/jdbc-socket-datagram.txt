@@ -1,0 +1,241 @@
+-------- jdbc
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+public class UserDatabaseApp implements ActionListener {
+private Connection connection;
+private JFrame frame;
+private JTextField idField, nameField, markField;
+private JTextArea displayArea;
+public UserDatabaseApp() {
+// Initialize the database connection
+try {
+connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/marklink",
+"root", "sw@23");
+} catch (SQLException e) {
+e.printStackTrace();
+}
+// Create the GUI
+frame = new JFrame("User Database App");
+frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+JMenuBar menuBar = new JMenuBar();
+JMenu menu = new JMenu("Menu");
+JMenuItem saveMenuItem = new JMenuItem("Save");
+JMenuItem displayMenuItem = new JMenuItem("Display");
+saveMenuItem.addActionListener(this);
+displayMenuItem.addActionListener(this);
+menu.add(saveMenuItem);
+menu.add(displayMenuItem);
+menuBar.add(menu);
+frame.setJMenuBar(menuBar);
+JPanel savePanel = new JPanel();
+savePanel.setLayout(new GridLayout(4, 2));
+JLabel idLabel = new JLabel("ID:");
+idField = new JTextField(20);
+JLabel nameLabel = new JLabel("Name:");
+nameField = new JTextField(20);
+JLabel markLabel = new JLabel("Mark:");
+markField = new JTextField(20);
+JButton saveButton = new JButton("Save");
+saveButton.addActionListener(this);
+savePanel.add(idLabel);
+savePanel.add(idField);
+savePanel.add(nameLabel);
+savePanel.add(nameField);
+savePanel.add(markLabel);
+savePanel.add(markField);
+savePanel.add(saveButton);
+displayArea = new JTextArea(15, 30);
+displayArea.setEditable(false);
+frame.getContentPane().add(savePanel, BorderLayout.NORTH);
+frame.getContentPane().add(new JScrollPane(displayArea), BorderLayout.CENTER);
+frame.setSize(400, 400);
+frame.setVisible(true);
+}
+public void actionPerformed(ActionEvent e) {
+if (e.getActionCommand().equals("Save")) {
+saveUser();
+} else if (e.getActionCommand().equals("Display")) {
+displayUsers();
+}
+}
+public void saveUser() {
+String id = idField.getText();
+String name = nameField.getText();
+String mark = markField.getText();
+try{ PreparedStatement ps = connection.prepareStatement("INSERT INTO Sheet (id, name,
+mark) VALUES (?, ?, ?)");
+ps.setString(1, id);
+ps.setString(2, name);
+ps.setString(3, mark);
+ps.executeUpdate();
+} catch (SQLException e) {
+e.printStackTrace();
+}
+}
+public void displayUsers() {
+displayArea.setText(""); // Clear the text area
+try{ Statement statement = connection.createStatement();
+ResultSet resultSet = statement.executeQuery("SELECT * FROM Sheet");
+while (resultSet.next()) {
+int id = resultSet.getInt("id");
+String name = resultSet.getString("name");
+int mark = resultSet.getInt("mark");
+displayArea.append("ID: " + id + ", Name: " + name + ", Mark: " + mark + "\n");
+}
+} catch (SQLException e) {
+e.printStackTrace();
+}
+}
+public static void main(String[] args) {
+SwingUtilities.invokeLater(() -> new UserDatabaseApp());
+}
+}
+
+---- socket tcp
+14
+import java.io.*;
+import java.net.*;
+public class ChatServer {
+public static void main(String[] args) {
+try{ ServerSocket serverSocket = new ServerSocket(12345);
+System.out.println("Server is running and waiting for a client to connect...");
+Socket clientSocket = serverSocket.accept();
+System.out.println("Client connected");
+BufferedReader in = new BufferedReader(new
+InputStreamReader(clientSocket.getInputStream()));
+PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+BufferedReader serverInput = new BufferedReader(new
+InputStreamReader(System.in));
+String clientMessage, serverMessage;
+while (true) {
+clientMessage = in.readLine();
+if (clientMessage != null) {
+System.out.println("Client: " + clientMessage);
+}
+serverMessage = serverInput.readLine();
+out.println(serverMessage);
+if ("bye".equalsIgnoreCase(serverMessage) ||
+"bye".equalsIgnoreCase(clientMessage)) {
+System.out.println("Chat ended");
+serverSocket.close();
+break;
+}
+}
+} catch (IOException e) {
+e.printStackTrace();
+}
+}
+}
+import java.io.*;
+import java.net.*;
+public class ChatClient {
+public static void main(String[] args) {
+try{ Socket socket = new Socket("localhost", 12345);
+System.out.println("Connected to server");
+BufferedReader in = new BufferedReader(new
+InputStreamReader(socket.getInputStream()));
+PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+BufferedReader clientInput = new BufferedReader(new InputStreamReader(System.in));
+String clientMessage, serverMessage;
+while (true) {
+clientMessage = clientInput.readLine();
+out.println(clientMessage);
+serverMessage = in.readLine();
+if (serverMessage != null) {
+System.out.println("Server: " + serverMessage);
+}
+if ("bye".equalsIgnoreCase(serverMessage) ||
+"bye".equalsIgnoreCase(clientMessage)) {
+System.out.println("Chat ended");
+socket.close();
+break;
+}
+}
+} catch (IOException e) {
+e.printStackTrace();
+}
+}
+}
+
+
+--- datagram udp
+15
+import java.io.*;
+import java.net.*;
+class ChatServer
+{
+public static DatagramSocket serversocket;
+public static DatagramPacket dp;
+public static BufferedReader dis;
+public static InetAddress ia;
+public static byte buf[] = new byte[1024];
+public static int cport = 789,sport=790;
+public static void main(String[] a) throws IOException
+{
+serversocket = new DatagramSocket(sport);
+dp = new DatagramPacket(buf,buf.length);
+dis = new BufferedReader
+(new InputStreamReader(System.in));
+ia = InetAddress.getLocalHost();
+System.out.println("Server is Running...");
+while(true)
+{
+serversocket.receive(dp);
+String str = new String(dp.getData(), 0,
+dp.getLength());
+if(str.equals("STOP"))
+{
+System.out.println("Terminated...");
+break;
+}
+System.out.println("Client: " + str);
+String str1 = new String(dis.readLine());
+buf = str1.getBytes();
+serversocket.send(new
+DatagramPacket(buf,str1.length(), ia, cport));
+}}}
+import java.io.*;
+import java.net.*;
+class ChatClient
+{
+public static DatagramSocket clientsocket;
+public static DatagramPacket dp;
+public static BufferedReader dis;
+public static InetAddress ia;
+public static byte buf[] = new byte[1024];
+public static int cport = 789, sport = 790;
+public static void main(String[] a) throws IOException
+{
+clientsocket = new DatagramSocket(cport);
+dp = new DatagramPacket(buf, buf.length);
+dis = new BufferedReader(new
+InputStreamReader(System.in));
+ia = InetAddress.getLocalHost();
+System.out.println("Client is Running... Type 'STOP'to Quit");
+while(true)
+{
+String str = new String(dis.readLine());
+buf = str.getBytes();
+if(str.equals("STOP"))
+{
+System.out.println("Terminated...");
+clientsocket.send(new
+DatagramPacket(buf,str.length(), ia,
+sport));
+break;
+}
+clientsocket.send(new DatagramPacket(buf,
+str.length(), ia, sport));
+clientsocket.receive(dp);
+String str2 = new String(dp.getData(), 0,
+dp.getLength());
+System.out.println("Server: " + str2);
+}}}
